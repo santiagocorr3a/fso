@@ -1,30 +1,72 @@
 import { useState } from 'react'
 
+const Button = ({click, name}) => {
+  return (
+    <button onClick={click}> {name} </button>
+  )
+}
+const StatisticLine = ({text, value}) => {
+  return (
+    <tbody>
+      <tr>
+        <td>{text}</td>
+        <td>{value}</td>
+      </tr>
+    </tbody>
+    
+  )
+}
+const Statistic = ({good, neutral, bad}) => {
+  const all = () => {return good + neutral + bad}
+  const average = () => {return (good -bad) / all()}
+  const positive = () => {return good / all() * 100}
+
+  if (all() !== 0){
+    return (
+    <div>
+      <table>
+        <StatisticLine text="Good" value = {good}/>
+        <StatisticLine text="Neutral" value = {neutral}/>
+        <StatisticLine text="Bad" value = {bad}/>
+        <StatisticLine text="All" value = {all()}/>
+        <StatisticLine text="Average" value = {average()}/>
+        <StatisticLine text="Positive" value = {positive() + "%"}/>
+      </table>
+    </div>
+  )}
+  else {
+    return (
+      <p>No feedback given</p>
+  )}
+}
 const App = () => {
-  const [counter, setCounter] = useState(0)
+  // save clicks of each button to its own state
+  const [good, setGood] = useState(0)
+  const [neutral, setNeutral] = useState(0)
+  const [bad, setBad] = useState(0)
 
-  const increaseByOne = () => {
-    setCounter(counter + 1)
+  const clickGood = () => {
+    setGood(good + 1)
   }
-
-  const decreaseByOne = () => { 
-    setCounter(counter - 1)
+  const clickNeutral = () => {
+    setNeutral(neutral + 1)
   }
-
-  const setToZero = () => {
-    setCounter(0)
+  const clickBad = () => {
+    setBad(bad + 1)
   }
-
+  
   return (
     <div>
-      <Display counter={counter} />
-      <Button onClick={increaseByOne} text="plus" />
-      <Button onClick={setToZero} text="zero" />
-      <Button onClick={decreaseByOne} text="minus" />
+      <h1>Give feedback!</h1>
+      <div>
+        <Button name="good" click={clickGood}/>
+        <Button name="neutral" click={clickNeutral}/>
+        <Button name="bad" click={clickBad}/>
+      </div>
+      <Statistic good={good} neutral={neutral} bad={bad}/>
     </div>
+    
   )
-} 
-const Display = ({counter}) => <div>{counter}</div>
-const Button = ({ onClick, text }) => <button onClick={onClick}>{text}</button>
+}
 
 export default App
