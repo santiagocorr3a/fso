@@ -7,16 +7,15 @@ import Numbers from './components/Numbers';
 const App = () => {
   const [persons, setPersons] = useState([
   ]);
-  
+
   useEffect(() => {
-    console.log('effect')
     axios.get('http://localhost:3001/persons')
     .then(response => {
-      console.log('promise fulfilled')
       setPersons(response.data)
       console.log(response.data)
     })
   }, [])
+
   const [newName, setNewName] = useState('Add new name')
   const [newNumber, setNewNumber] = useState('###-###-####')
   const [search, setSearch] = useState('')
