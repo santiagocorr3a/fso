@@ -3,17 +3,15 @@ import axios from 'axios';
 import Filter from './components/Filter';
 import Addcontact from './components/AddContact';
 import Numbers from './components/Numbers';
+import phoneService from './services/numbers';
 
 const App = () => {
   const [persons, setPersons] = useState([
   ]);
 
   useEffect(() => {
-    axios.get('http://localhost:3001/persons')
-    .then(response => {
-      setPersons(response.data)
-      console.log(response.data)
-    })
+    phoneService.getAll()
+    .then(response => setPersons(response))
   }, [])
 
   const [newName, setNewName] = useState('Add new name')
@@ -44,22 +42,42 @@ const App = () => {
       number: newNumber
     }
     if (persons.some(person => person.name === newName) || persons.some(person => person.number === newNumber)){
-      alert(`${newName} is already added to phonebook`)
+      if (window.confirm('${person.name} is already added to the phonebook, replace the old number with a new one?')) {
+        updateData(persons.find(person => person.name === newName).id, personObject)
+      }
     } else {
-      setPersons(persons.concat(personObject))
+      phoneService.create(personObject)
+      .then(response => {
+        setPersons(persons.concat(response))
+    })
     }}
   
   const notesToShow = showAll
     ? persons
     : persons.filter(person => person.name.toLowerCase().includes(search.toLowerCase()) || person.number.includes(search))
 
+  const confirmDeletion = (id) => {
+    const person = persons.find(person => person.id === id)
+    if (window.confirm(`Delete ${person.name}?`)) {
+      phoneService.remove(id)
+      .then(response => {
+        setPersons(persons.filter(person => person.id !== id))
+      })
+    }
+  }
+
+  const updateData = (id, personObject) => {
+    phoneService.update(id, personObject)
+    .then(response => {setPersons(persons.map(person => person.id !== id ? person : response))
+    })
+  }
   return (
     <div>
       <h2>Phonebook</h2>
       <h3>Filter</h3>
       <Filter search={search} handleSearch={handleSearch}/>
       <Addcontact newName={newName} handleNameChange={handleNameChange} newNumber={newNumber} handleNumberChange={handleNumberChange} addData={addData}/>
-      <Numbers notesToShow={notesToShow}/>
+      <Numbers notesToShow={notesToShow} confirmDeletion={confirmDeletion}/>
     </div>
   )
 }
