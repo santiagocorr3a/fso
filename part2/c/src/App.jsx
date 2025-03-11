@@ -4,6 +4,8 @@ import Filter from './components/Filter';
 import Addcontact from './components/AddContact';
 import Numbers from './components/Numbers';
 import phoneService from './services/numbers';
+import Notification from './components/Notification';
+import './index.css'
 
 const App = () => {
   const [persons, setPersons] = useState([
@@ -18,6 +20,20 @@ const App = () => {
   const [newNumber, setNewNumber] = useState('###-###-####')
   const [search, setSearch] = useState('')
   const [showAll, setShowAll] = useState(true)
+  const [message, setMessage] = useState(null)
+  const [style, setStyle] = useState('')
+  const green = {
+    color: 'green',
+    fontStyle: 'italic',
+    border: 'solid 2px green',
+    borderRadius: '5px',
+  }
+  const red = {
+    color: 'red',
+    fontStyle: 'italic',
+    border: 'solid 2px red',
+    borderRadius: '5px',
+  }
 
   const handleNameChange = (event) => {
     setNewName(event.target.value)
@@ -41,8 +57,10 @@ const App = () => {
       name: newName,
       number: newNumber
     }
+    phoneService.getAll()
+    .then(response => setPersons(response))
     if (persons.some(person => person.name === newName) || persons.some(person => person.number === newNumber)){
-      if (window.confirm('${person.name} is already added to the phonebook, replace the old number with a new one?')) {
+      if (window.confirm(`${persons.name} is already added to the phonebook, replace the old number with a new one?`)) {
         updateData(persons.find(person => person.name === newName).id, personObject)
       }
     } else {
@@ -50,6 +68,12 @@ const App = () => {
       .then(response => {
         setPersons(persons.concat(response))
     })
+    setStyle(green)
+      setMessage(`Added ${newName}`)
+      setTimeout(() => {
+        setMessage(null)
+      }
+      ,5000)
     }}
   
   const notesToShow = showAll
@@ -70,10 +94,18 @@ const App = () => {
     phoneService.update(id, personObject)
     .then(response => {setPersons(persons.map(person => person.id !== id ? person : response))
     })
+    .catch(error => {
+      setStyle(red)
+      setMessage(`Information of ${personObject.name} has already been removed`)
+      setTimeout(() => {
+        setMessage(null)
+      }, 5000)
+    })
   }
   return (
     <div>
       <h2>Phonebook</h2>
+      <Notification message={message} style={style}/>
       <h3>Filter</h3>
       <Filter search={search} handleSearch={handleSearch}/>
       <Addcontact newName={newName} handleNameChange={handleNameChange} newNumber={newNumber} handleNumberChange={handleNumberChange} addData={addData}/>
